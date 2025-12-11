@@ -1,0 +1,13 @@
+import sqlite3
+
+conn = sqlite3.connect("applications.db")
+c = conn.cursor()
+
+c.execute("SELECT * FROM applications")
+rows = c.fetchall()
+
+print("\n=== APPLICATIONS TABLE ===")
+for r in rows:
+    print(r)
+
+conn.close()

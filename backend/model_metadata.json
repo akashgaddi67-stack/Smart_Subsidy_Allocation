@@ -1,0 +1,24 @@
+{
+  "model_file": "subsidy_model_v1.pkl",
+  "features": [
+    "acres",
+    "soil_type",
+    "irrigation_type",
+    "location",
+    "crop",
+    "income"
+  ],
+  "cat_cols": [
+    "soil_type",
+    "irrigation_type",
+    "location",
+    "crop"
+  ],
+  "num_cols": [
+    "acres",
+    "income"
+  ],
+  "mae_test": 5656.6239852481895,
+  "r2_test": 0.981692781210007,
+  "cv_neg_mae_mean": -7360.813845647847
+}

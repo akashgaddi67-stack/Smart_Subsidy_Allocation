@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Smart Subsidy Allocation Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --gov-blue: #0b3d91;
+      --gov-accent: #0b9d58;
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --warning: #ffedd5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      background: linear-gradient(180deg, #f7fbff, #f4f5f7);
+      color: #111827;
+    }
+
+    /* Header */
+    .gov-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .gov-header-left { display:flex; align-items:center; gap:12px; }
+    .gov-logo-circle { width:44px; height:44px; border-radius:50%; background:var(--gov-blue); display:flex; align-items:center; justify-content:center; color:white; font-size:20px; }
+    .gov-header-title { font-size:18px; font-weight:700; }
+    .gov-header-sub { font-size:12px; color:var(--muted); }
+
+    .gov-nav { display:flex; gap:12px; align-items:center; }
+    .gov-nav-link { color:var(--muted); text-decoration:none; padding:6px 8px; border-radius:6px; font-weight:600; }
+    .gov-nav-link-active { color:var(--gov-blue); background: #f0f8ff; border:1px solid #e6f0ff; }
+
+    .container { max-width:1000px; margin:28px auto; padding:0 18px 60px; }
+
+    h1,h2,h3 { margin:0 0 8px; }
+    .muted { color:var(--muted); font-size:14px; }
+
+    .card {
+      background:var(--card);
+      padding:18px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+      margin-top:18px;
+    }
+
+    .input, select {
+      width:100%;
+      padding:12px;
+      margin-top:8px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      font-size:15px;
+    }
+    .input:focus, select:focus { outline:none; box-shadow:0 0 0 3px rgba(11,61,145,0.06); border-color:var(--gov-blue); }
+
+    label.field-label { display:block; margin-top:12px; font-weight:600; font-size:14px; }
+    .field-help { font-size:13px; color:var(--muted); margin-top:6px; }
+
+    button {
+      margin-top:14px;
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:none;
+      background:var(--gov-blue);
+      color:white;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+    }
+    button:disabled { background:#9aa4b2; cursor:not-allowed; }
+
+    .link-btn { margin-top:12px; color:var(--gov-blue); cursor:pointer; text-align:center; }
+
+    .info-banner { background:var(--warning); border:1px solid #fcd7a9; padding:10px 12px; border-radius:8px; margin-bottom:14px; color:#7c2d12; }
+
+    /* Farmer big card */
+    .farmer-card { display:flex; gap:18px; align-items:center; padding:18px; border-radius:12px; background:#f8fbff; border:1px solid #e6f3ff; }
+    .farmer-avatar { width:84px; height:84px; border-radius:12px; background:#eef6ff; display:flex; align-items:center; justify-content:center; font-size:36px; color:var(--gov-blue); }
+    .farmer-main { flex:1; }
+    .farmer-name { font-size:20px; font-weight:800; }
+    .farmer-sub { color:var(--muted); margin-top:6px; }
+    .farmer-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+    .farmer-grid .item { background:white; padding:10px; border-radius:8px; border:1px solid #eef2f7; }
+    .farmer-grid .label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; }
+    .farmer-grid .value { font-weight:700; margin-top:6px; }
+
+    .farmer-tags { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tag { padding:6px 10px; border-radius:999px; background:#fff; border:1px solid #eef2f7; font-size:13px; }
+
+    .scheme { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px; border-radius:10px; border:1px solid #e9f2ff; background:#fbfeff; margin-top:10px; }
+    .badge { padding:6px 10px; border-radius:999px; font-weight:700; }
+    .green { background:#ecfdf5; color:var(--gov-accent); }
+    .yellow { background:#fff7ed; color:#b45309; }
+
+    .checkbox-row { display:flex; gap:10px; align-items:center; margin-top:12px; cursor:pointer; }
+
+    #toast { position:fixed; right:18px; bottom:18px; background:#111827; color:#fff; padding:12px 16px; border-radius:8px; display:none; box-shadow:0 8px 24px rgba(0,0,0,0.24); z-index:60; }
+
+    .gov-footer { margin-top:40px; padding:16px; text-align:center; color:var(--muted); font-size:13px; }
+    @media (max-width:760px) {
+      .farmer-grid { grid-template-columns:1fr; }
+      .farmer-card { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="gov-header">
+    <div class="gov-header-left">
+      <div class="gov-logo-circle">🪙</div>
+      <div>
+        <div class="gov-header-title">Smart Subsidy Allocation Portal</div>
+        <div class="gov-header-sub">Department of Agriculture · Academic Prototype</div>
+      </div>
+    </div>
+    <nav class="gov-nav">
+      <a href="#" class="gov-nav-link gov-nav-link-active" id="navHome" onclick="switchScreen('screen1');return false;">Home</a>
+      <a href="#" class="gov-nav-link" id="navApply" onclick="switchScreen('screen2');return false;">Apply</a>
+      <a href="#" class="gov-nav-link" id="navSchemes" onclick="switchScreen('screenSchemes');return false;">Schemes</a>
+      <a href="#" class="gov-nav-link" id="navHelp" onclick="switchScreen('screenHelp');return false;">Help</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Welcome</h2>
+    <p class="muted">Verify your Aadhaar, confirm your details and submit an application. One Aadhaar → one application is enforced.</p>
+
+    <div class="card">
+      <div class="info-banner"><strong>Demo:</strong> Data and estimates are prototype-only. Bank account numbers are encrypted at rest.</div>
+
+      <!-- Aadhaar lookup -->
+      <div id="screen1" class="screen active">
+        <h3>Apply / Track</h3>
+        <label class="field-label">Aadhaar Number <span style="color:#dc2626">*</span></label>
+        <input id="aadhaar" class="input" maxlength="18" placeholder="Enter 12-digit Aadhaar (or pasted value from CSV)" />
+        <div class="field-help">You can paste numbers like 8.00E+11 — the system normalizes them.</div>
+        <button onclick="verifyAadhaar()">Verify & View Details</button>
+
+        <div style="margin-top:18px;">
+          <label class="field-label">Track Application</label>
+          <input id="trackId" class="input" placeholder="Enter Application ID" />
+          <button onclick="track()">Track Status</button>
+          <div id="trackResult" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <!-- Apply screen -->
+      <div id="screen2" class="screen" style="display:none; margin-top:18px;">
+        <h3>Verify details & proceed</h3>
+
+        <div id="farmerProfile" style="display:none;" class="farmer-card">
+          <div class="farmer-avatar">👨‍🌾</div>
+          <div class="farmer-main">
+            <div class="farmer-name" id="farmerName">Farmer Name</div>
+            <div class="farmer-sub" id="farmerSub">Aadhaar masked • location</div>
+            <div class="farmer-grid" id="farmerGrid">
+              <!-- items filled dynamically -->
+            </div>
+            <div class="farmer-tags" id="farmerTags"></div>
+          </div>
+        </div>
+
+        <div id="confirmationSection" style="display:none;">
+          <label class="checkbox-row">
+            <input type="checkbox" id="confirmDetails" />
+            <div>I confirm that the above information is correct and belongs to me.</div>
+          </label>
+          <button id="proceedBtn" disabled onclick="showForm()">Proceed →</button>
+        </div>
+
+        <div id="applicationForm" class="card" style="display:none;">
+          <h3>Application Form</h3>
+
+          <label class="field-label">Annual Income (₹) <span style="color:#dc2626">*</span></label>
+          <input id="income" class="input" type="number" placeholder="e.g. 85000" />
+
+          <label class="field-label">Primary Crop <span style="color:#dc2626">*</span></label>
+          <select id="crop" class="input">
+            <option value="">-- Select Crop --</option>
+            <option>rice</option><option>wheat</option><option>maize</option><option>cotton</option>
+            <option>chickpea</option><option>pigeon peas</option><option>kidney beans</option><option>moong beans</option>
+            <option>black grams</option><option>lentil</option><option>pomegranate</option><option>banana</option>
+            <option>mango</option><option>grapes</option><option>watermelon</option><option>muskmelon</option>
+            <option>apple</option><option>orange</option><option>papaya</option><option>coconut</option>
+            <option>jute</option><option>coffee</option>
+          </select>
+
+          <label class="field-label">Mobile Number (optional)</label>
+          <input id="phone" class="input" placeholder="e.g. 9876543210" />
+
+          <label class="field-label">Bank Account Number (optional)</label>
+          <input id="bank" class="input" placeholder="Your bank account (kept encrypted)" />
+          <div class="field-help">Account numbers are encrypted in the backend. Do not share PINs or OTPs.</div>
+
+          <button onclick="submitApp()">Submit Application</button>
+          <div class="link-btn" onclick="goBack()">← Back</div>
+        </div>
+      </div>
+
+      <!-- Submitted screen -->
+      <div id="screen3" class="screen" style="display:none; margin-top:18px;">
+        <h3>Application Submitted</h3>
+        <div class="card">
+          <p><strong>Application ID:</strong> <span id="appId"></span></p>
+          <p><strong>AI-Predicted Subsidy:</strong> ₹ <span id="predicted"></span></p>
+          <h4>Eligible Schemes</h4>
+          <div id="schemeList"></div>
+        </div>
+        <button onclick="restart()">New Application</button>
+      </div>
+    </div>
+
+    <!-- Schemes -->
+    <div id="screenSchemes" class="card screen" style="display:none;">
+      <h3>Available Subsidy Schemes (Demo)</h3>
+      <p class="muted">The portal evaluates eligibility using landholding, crop, income and other factors.</p>
+      <div class="card">
+        <h4>PM-Kisan</h4>
+        <p>Direct income support of ₹ 6,000 per year for eligible farmers (demo logic).</p>
+      </div>
+      <div class="card">
+        <h4>PMFBY Crop Insurance</h4>
+        <p>Crop insurance support for selected crops like rice, wheat, maize, cotton.</p>
+      </div>
+      <div class="card">
+        <h4>Soil Health Card</h4>
+        <p>Support for soil testing and advice.</p>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div id="screenHelp" class="card screen" style="display:none;">
+      <h3>Help & FAQ</h3>
+      <div class="card">
+        <h4>Who can apply?</h4>
+        <p>Farmers with Aadhaar linked records in the department dataset can apply. One Aadhaar = one application.</p>
+      </div>
+      <div class="card">
+        <h4>How is subsidy estimated?</h4>
+        <p>Predefined rules + an ML model provide an estimated subsidy amount (demo only).</p>
+      </div>
+    </div>
+
+    <div style="height:18px;"></div>
+    <div class="gov-footer">© Smart Subsidy Allocation Portal — Academic Prototype · Designed by Akash Gaddi</div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    const API = "http://127.0.0.1:5000";
+    let currentAadhaar = "";
+
+    function showToast(msg, ms=2800) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.style.display = "block";
+      setTimeout(()=> t.style.display="none", ms);
+    }
+
+    function hideAllScreens() {
+      document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+      document.querySelectorAll('.gov-nav-link').forEach(a => a.classList.remove('gov-nav-link-active'));
+    }
+
+    function switchScreen(id) {
+      hideAllScreens();
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'block';
+      // set nav highlight
+      if (id === 'screen1') document.getElementById('navHome').classList.add('gov-nav-link-active');
+      if (id === 'screen2') document.getElementById('navApply').classList.add('gov-nav-link-active');
+      if (id === 'screenSchemes') document.getElementById('navSchemes').classList.add('gov-nav-link-active');
+      if (id === 'screenHelp') document.getElementById('navHelp').classList.add('gov-nav-link-active');
+    }
+
+    // normalize helper (frontend-side minor cleaning before sending)
+    function normalizeAadhaarInput(v) {
+      if (!v) return "";
+      let s = String(v).trim().replace(/[, ]+/g, "");
+      // handle scientific-looking e.g. 8.00E+11 — just let backend handle heavy lifting
+      return s;
+    }
+
+    async function verifyAadhaar() {
+      const raw = document.getElementById('aadhaar').value.trim();
+      if (!raw) { showToast("Please enter Aadhaar"); return; }
+      const aad = normalizeAadhaarInput(raw);
+      // call backend lookup
+      try {
+        const res = await fetch(API + "/lookup", {
+          method: "POST",
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({aadhaar: aad})
+        });
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok || !data.found) {
+          showToast(data.message || "Aadhaar not found");
+          return;
+        }
+        // display big farmer card
+        currentAadhaar = aad;
+        const r = data.record || {};
+        buildFarmerCard(r);
+        document.getElementById('confirmationSection').style.display = 'block';
+        document.getElementById('applicationForm').style.display = 'none';
+        document.getElementById('proceedBtn').disabled = true;
+        document.getElementById('confirmDetails').checked = false;
+        switchScreen('screen2');
+      } catch (err) {
+        console.error(err);
+        showToast("Network error. Ensure backend is running.");
+      }
+    }
+
+    function buildFarmerCard(r) {
+      const name = r.name || "Farmer";
+      const acres = r.acres || "N/A";
+      const soil = r.soil_type || "N/A";
+      const irrigation = r.irrigation_type || "N/A";
+      const loc = r.location || "N/A";
+      const aadMasked = r.aadhaar_masked || "************";
+
+      document.getElementById('farmerProfile').style.display = 'flex';
+      document.getElementById('farmerName').innerText = name;
+      document.getElementById('farmerSub').innerText = `Aadhaar: ${aadMasked} • ${loc}`;
+
+      const grid = document.getElementById('farmerGrid');
+      grid.innerHTML = '';
+      const addItem = (label, value) => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<div class="label">${label}</div><div class="value">${value}</div>`;
+        grid.appendChild(div);
+      };
+      addItem('Land holding', acres + ' acres');
+      addItem('Soil type', soil);
+      addItem('Irrigation', irrigation);
+
+      const tags = document.getElementById('farmerTags');
+      tags.innerHTML = `<div class="tag">Verified via Aadhaar</div>
+                        ${acres && acres!=='0' ? `<div class="tag">${acres} acres</div>` : ''}
+                        ${soil ? `<div class="tag">Soil: ${soil}</div>` : ''}`;
+    }
+
+    // proceed button logic (consent)
+    document.addEventListener('DOMContentLoaded', ()=> {
+      const chk = document.getElementById('confirmDetails');
+      const btn = document.getElementById('proceedBtn');
+      if (chk && btn) {
+        chk.addEventListener('change', function(){
+          btn.disabled = !this.checked;
+        });
+      }
+    });
+
+    function showForm() {
+      document.getElementById('applicationForm').style.display = 'block';
+      document.getElementById('confirmationSection').style.display = 'none';
+    }
+
+    async function submitApp() {
+      const income = Number(document.getElementById('income').value || 0);
+      const crop = document.getElementById('crop').value || '';
+      const phone = document.getElementById('phone').value.trim();
+      const bank = document.getElementById('bank').value.trim();
+
+      if (!income || !crop) { showToast('Income and crop are required'); return; }
+      if (!currentAadhaar) { showToast('Please verify Aadhaar first'); return; }
+
+      const payload = {
+        aadhaar: currentAadhaar,
+        income: income,
+        crop: crop,
+        phone: phone,
+        bank_account: bank
+      };
+
+      try {
+        const res = await fetch(API + "/submit", {
+          method: "POST",
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(()=>({}));
+
+        if (!res.ok) {
+          // one Aadhaar one application handling
+          if (data.error && data.error.includes("Application already exists") && data.application_id) {
+            showToast(`${data.error}. ID: ${data.application_id}`);
+            document.getElementById('trackId').value = data.application_id;
+            switchScreen('screen1');
+            return;
+          }
+          showToast(data.error || 'Failed to submit application');
+          return;
+        }
+
+        // success
+        document.getElementById('appId').innerText = data.application_id;
+        document.getElementById('predicted').innerText = (data.predicted_amount == null) ? 'N/A' : Math.round(data.predicted_amount);
+        const schemeList = document.getElementById('schemeList');
+        schemeList.innerHTML = (data.eligible_schemes || []).map(s => `
+          <div class="scheme">
+            <div>
+              <div style="font-weight:800">${s.scheme_name}</div>
+              <div class="muted" style="font-size:13px;">${s.reason || ''}</div>
+            </div>
+            <div class="badge ${s.amount > 5000 ? 'green' : 'yellow'}">₹ ${s.amount}</div>
+          </div>
+        `).join('');
+        switchScreen('screen3');
+
+      } catch (err) {
+        console.error(err);
+        showToast('Network error while submitting');
+      }
+    }
+
+    async function track() {
+      const id = document.getElementById('trackId').value.trim();
+      const box = document.getElementById('trackResult');
+      if (!id) { box.innerHTML = '<p class="muted">Please enter an Application ID</p>'; return; }
+
+      try {
+        const res = await fetch(API + '/status/' + encodeURIComponent(id));
+        if (!res.ok) {
+          box.innerHTML = `<p style="color:#b91c1c">❌ Application not found</p>`;
+          return;
+        }
+        const data = await res.json();
+        const pred = (data.predicted_amount == null) ? 'N/A' : Math.round(data.predicted_amount);
+        let html = `<div class="card">
+                      <p><strong>Application ID:</strong> ${data.id}</p>
+                      <p><strong>Status:</strong> ${data.status}</p>
+                      <p><strong>Predicted Subsidy:</strong> ₹ ${pred}</p>
+                      <p><strong>Created:</strong> ${data.created_at}</p>`;
+        if (data.status_history && data.status_history.length) {
+          html += '<h4 style="margin-top:8px;">Status History</h4>';
+          html += data.status_history.map(h => `<p class="muted">${h.at}: ${h.from || 'Created'} → ${h.to} (by ${h.by})</p>`).join('');
+        }
+        html += '</div>';
+        box.innerHTML = html;
+
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = `<p style="color:#b91c1c">Network error. Ensure backend is running.</p>`;
+      }
+    }
+
+    function goBack() {
+      switchScreen('screen1');
+    }
+
+    function restart() {
+      currentAadhaar = '';
+      document.getElementById('aadhaar').value = '';
+      document.getElementById('income').value = '';
+      document.getElementById('crop').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('bank').value = '';
+      document.getElementById('farmerProfile').style.display = 'none';
+      document.getElementById('confirmationSection').style.display = 'none';
+      document.getElementById('applicationForm').style.display = 'none';
+      switchScreen('screen1');
+    }
+
+    // initialize screens
+    (function(){ switchScreen('screen1'); })();
+  </script>
+</body>
+</html>

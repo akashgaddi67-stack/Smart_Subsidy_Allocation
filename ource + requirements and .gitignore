@@ -1,0 +1,13 @@
+.gitignore
+backend/app.py
+backend/applications.db.bak
+backend/dedupe_db.py
+backend/fernet.key
+backend/model_metadata.json
+backend/model_train.py
+backend/requirements.txt
+backend/subsidy_model_v1.pkl
+backend/view_db
+backend/view_db.py
+frontend/index.html
+requirements.txt
